@@ -15,6 +15,15 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.disable('x-powered-by');
+
+// Basic security headers
+app.use((_, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  next();
+});
+
 app.use(cors({ origin: '*' }));
 app.use(express.json());
 
