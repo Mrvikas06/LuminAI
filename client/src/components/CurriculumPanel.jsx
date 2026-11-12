@@ -1,10 +1,23 @@
+import { useState } from 'react';
 import { getMasteryColor, recommendNextTopic } from '../utils/adaptiveEngine';
 
 export default function CurriculumPanel({ curriculum, masteryMap, activeTopic, onSelectTopic }) {
   if (!curriculum) return null;
+  const [search, setSearch] = useState('');
   const next = recommendNextTopic(curriculum, masteryMap);
+
+  const filterQuery = search.trim().toLowerCase();
+  const filteredNodes = (curriculum.nodes || []).filter(node => {
+    if (!filterQuery) return true;
+    return (
+      (node.label || '').toLowerCase().includes(filterQuery) ||
+      (node.description || '').toLowerCase().includes(filterQuery) ||
+      (node.group || '').toLowerCase().includes(filterQuery)
+    );
+  });
+
   const groups = {};
-  (curriculum.nodes || []).forEach(node => {
+  filteredNodes.forEach(node => {
     const g = node.group || 'General';
     if (!groups[g]) groups[g] = [];
     groups[g].push(node);
@@ -15,7 +28,17 @@ export default function CurriculumPanel({ curriculum, masteryMap, activeTopic, o
       <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
         <div style={{ fontSize: 11, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 6, fontWeight: 600 }}>CURRICULUM</div>
         <div style={{ fontSize: 18, fontFamily: 'Outfit', fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>{curriculum.subject}</div>
-        <div style={{ fontSize: 13, color: 'var(--text3)', lineHeight: 1.5 }}>{curriculum.summary}</div>
+        <div style={{ fontSize: 13, color: 'var(--text3)', lineHeight: 1.5, marginBottom: 12 }}>{curriculum.summary}</div>
+        <input
+          type="text"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Filter topics…"
+          aria-label="Filter topics"
+          style={{ width: '100%', boxSizing: 'border-box', padding: '8px 12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 12, outline: 'none' }}
+          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
+          onBlur={e => e.target.style.borderColor = 'var(--border)'}
+        />
       </div>
 
       {next && (
