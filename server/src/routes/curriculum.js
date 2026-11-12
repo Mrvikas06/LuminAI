@@ -2,6 +2,7 @@
 import { Router } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getUser, updateUser } from '../store.js';
+import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -43,8 +44,7 @@ Requirements:
 - estimatedMinutes: 15-60 per topic`;
 
     const result = await model.generateContent(prompt);
-    const raw = result.response.text().trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    const curriculum = JSON.parse(raw);
+    const curriculum = parseGenerativeJson(result.response.text());
 
     updateUser(userId, { subject, curriculum });
     res.json({ curriculum });
