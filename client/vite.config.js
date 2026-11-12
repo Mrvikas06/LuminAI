@@ -6,6 +6,15 @@ export default defineConfig({
   build: {
     outDir: '../server/public',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'zustand'],
+          markdown: ['react-markdown', 'remark-math', 'rehype-katex'],
+          katex: ['katex'],
+        },
+      },
+    },
   },
   server: {
     port: 5173,
