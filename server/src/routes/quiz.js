@@ -7,6 +7,7 @@ import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 
 router.post('/generate', async (req, res) => {
   const { userId, count = 5 } = req.body || {};
@@ -20,7 +21,7 @@ router.post('/generate', async (req, res) => {
   const topicsStr = weakTopics.map(t => `- ${t.label} (id: ${t.id})`).join('\n');
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3-flash-preview',
+    model: MODEL_NAME,
     systemInstruction: 'You are a quiz generator. Return ONLY valid JSON, no markdown.',
   });
 

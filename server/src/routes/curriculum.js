@@ -6,7 +6,8 @@ import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
+const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
 router.post('/generate', async (req, res) => {
   const { subject, userId } = req.body || {};

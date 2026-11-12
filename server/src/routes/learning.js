@@ -7,6 +7,7 @@ import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const MODEL_NAME = process.env.GEMINI_MODEL || 'gemini-3-flash-preview';
 
 // SSE streaming explanation
 router.post('/explain', async (req, res) => {
@@ -23,7 +24,7 @@ router.post('/explain', async (req, res) => {
   res.setHeader('Connection', 'keep-alive');
 
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3-flash-preview',
+    model: MODEL_NAME,
     systemInstruction: `You are an expert adaptive tutor. ${modeHint} Use markdown formatting.`,
   });
 
@@ -56,7 +57,7 @@ router.post('/evaluate', async (req, res) => {
 
   const user = getUser(userId);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-3-flash-preview',
+    model: MODEL_NAME,
     systemInstruction: 'You are an expert adaptive tutor evaluating student answers. Be encouraging but honest. Return ONLY valid JSON with no markdown.',
   });
 
