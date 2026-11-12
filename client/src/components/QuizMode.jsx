@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { generateQuiz, submitQuiz } from '../api/uale';
+import { generateQuiz, submitQuiz } from '../api/api';
 import { useLearningStore } from '../store/learningStore';
 import { getMasteryColor } from '../utils/adaptiveEngine';
 

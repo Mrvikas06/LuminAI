@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLearningStore } from './store/learningStore';
-import { generateCurriculum, getProgress } from './api/uale';
+import { generateCurriculum, getProgress } from './api/api';
 import SetupScreen from './components/SetupScreen';
 import CurriculumPanel from './components/CurriculumPanel';
 import ChatPanel from './components/ChatPanel';

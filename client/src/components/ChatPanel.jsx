@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { streamExplanation, evaluateAnswer } from '../api/uale';
+import { streamExplanation, evaluateAnswer } from '../api/api';
 import { MISTAKE_META, EXPLANATION_MODES } from '../utils/adaptiveEngine';
 import { useLearningStore } from '../store/learningStore';
 
