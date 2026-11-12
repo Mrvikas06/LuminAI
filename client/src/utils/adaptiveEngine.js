@@ -45,8 +45,9 @@ export const EXPLANATION_MODES = [
   { id: 'real_world', label: 'Real World', icon: '🌍', desc: 'Practical applications' },
 ];
 
-export function recommendNextTopic(curriculum, masteryMap) {
+export function recommendNextTopic(curriculum, masteryMap = {}) {
   if (!curriculum?.nodes?.length) return null;
+  const map = masteryMap || {};
   const prereqMap = {};
   (curriculum.edges || []).forEach(({ from, to }) => {
     prereqMap[to] = prereqMap[to] || [];
@@ -54,14 +55,15 @@ export function recommendNextTopic(curriculum, masteryMap) {
   });
   const eligible = curriculum.nodes.filter(node => {
     const prereqs = prereqMap[node.id] || [];
-    return prereqs.every(p => (masteryMap[p] || 0) >= 0.50);
+    return prereqs.every(p => (map[p] || 0) >= 0.50);
   });
   if (!eligible.length) return curriculum.nodes[0];
-  return eligible.sort((a, b) => (masteryMap[a.id] || 0) - (masteryMap[b.id] || 0))[0];
+  return [...eligible].sort((a, b) => (map[a.id] || 0) - (map[b.id] || 0))[0];
 }
 
-export function getCurriculumProgress(curriculum, masteryMap) {
+export function getCurriculumProgress(curriculum, masteryMap = {}) {
   if (!curriculum?.nodes?.length) return 0;
-  const total = curriculum.nodes.reduce((s, n) => s + (masteryMap[n.id] || 0), 0);
+  const map = masteryMap || {};
+  const total = curriculum.nodes.reduce((s, n) => s + (map[n.id] || 0), 0);
   return Math.round((total / curriculum.nodes.length) * 100);
 }
