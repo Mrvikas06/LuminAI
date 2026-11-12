@@ -62,15 +62,20 @@ export default function ChatPanel({ activeTopic, userId }) {
     const id = ++msgIdRef.current;
     addMessage({ id, role: 'assistant', content: '', streaming: true });
     let lastFU = null;
-    await streamExplanation({ topicId: topic.id, topicLabel: topic.label, mode, userId }, chunk => {
-      const m = chunk.match(/#{2,3}\s*Check Your Understanding:?\s*[\r\n]+([^\r\n]+)/i);
-      lastFU = m ? m[1].trim() : null;
-      updateMessage(id, { content: chunk, streaming: true, followUpQuestion: lastFU });
-    });
-    updateMessage(id, { streaming: false, followUpQuestion: lastFU });
-    if (lastFU) setAwaitingAnswer({ topicId: topic.id, topicLabel: topic.label, question: lastFU });
-    setIsLoading(false);
-    scrollBottom();
+    try {
+      await streamExplanation({ topicId: topic.id, topicLabel: topic.label, mode, userId }, chunk => {
+        const m = chunk.match(/#{2,3}\s*Check Your Understanding:?\s*[\r\n]+([^\r\n]+)/i);
+        lastFU = m ? m[1].trim() : null;
+        updateMessage(id, { content: chunk, streaming: true, followUpQuestion: lastFU });
+      });
+      updateMessage(id, { streaming: false, followUpQuestion: lastFU });
+      if (lastFU) setAwaitingAnswer({ topicId: topic.id, topicLabel: topic.label, question: lastFU });
+    } catch (err) {
+      updateMessage(id, { content: `⚠️ Error loading lesson: ${err.message || 'Connection failed'}. Please try again.`, streaming: false });
+    } finally {
+      setIsLoading(false);
+      scrollBottom();
+    }
   };
 
   const handleEvaluate = async (userAnswer) => {
