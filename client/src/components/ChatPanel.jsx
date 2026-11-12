@@ -97,12 +97,43 @@ export default function ChatPanel({ activeTopic, userId }) {
     setIsLoading(false);
   };
 
+  const handleFreeQuestion = async (text) => {
+    if (!activeTopic) {
+      addMessage({ role: 'user', content: text });
+      addMessage({ role: 'assistant', content: 'Please select a topic from the curriculum sidebar to begin learning or ask questions about that topic.' });
+      return;
+    }
+
+    addMessage({ role: 'user', content: text });
+    setIsLoading(true);
+    const id = ++msgIdRef.current;
+    addMessage({ id, role: 'assistant', content: '', streaming: true });
+    let lastFU = null;
+    try {
+      await streamExplanation({ topicId: activeTopic.id, topicLabel: `${activeTopic.label} — Question: ${text}`, mode, userId }, chunk => {
+        const m = chunk.match(/#{2,3}\s*Check Your Understanding:?\s*[\r\n]+([^\r\n]+)/i);
+        lastFU = m ? m[1].trim() : null;
+        updateMessage(id, { content: chunk, streaming: true, followUpQuestion: lastFU });
+      });
+      updateMessage(id, { streaming: false, followUpQuestion: lastFU });
+      if (lastFU) setAwaitingAnswer({ topicId: activeTopic.id, topicLabel: activeTopic.label, question: lastFU });
+    } catch (err) {
+      updateMessage(id, { content: `⚠️ Error: ${err.message || 'Failed to answer'}. Please try again.`, streaming: false });
+    } finally {
+      setIsLoading(false);
+      scrollBottom();
+    }
+  };
+
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
     const text = input.trim();
     setInput('');
-    if (awaitingAnswer) { handleEvaluate(text); return; }
-    addMessage({ role: 'user', content: text });
+    if (awaitingAnswer) {
+      handleEvaluate(text);
+      return;
+    }
+    handleFreeQuestion(text);
   };
 
   useEffect(() => {
