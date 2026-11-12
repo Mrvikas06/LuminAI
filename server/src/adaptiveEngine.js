@@ -1,12 +1,14 @@
 // server/src/adaptiveEngine.js
 
 export function updateMastery(current = 0, correct, mistakeType) {
+  const safeCurrent = typeof current === 'number' && !Number.isNaN(current) ? current : 0;
   const delta = correct
     ? 0.15
     : mistakeType === 'conceptual_misunderstanding' ? -0.12
     : mistakeType === 'partial_knowledge'           ? -0.05
     : -0.03;
-  return Math.max(0, Math.min(1, current + delta));
+  const updated = Math.max(0, Math.min(1, safeCurrent + delta));
+  return Math.round(updated * 100) / 100;
 }
 
 export function selectWeakTopics(curriculum, masteryMap, count = 5) {
