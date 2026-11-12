@@ -12,6 +12,7 @@ export default function QuizMode({ userId }) {
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [quizError, setQuizError] = useState(null);
 
   if (!curriculum) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -22,24 +23,52 @@ export default function QuizMode({ userId }) {
   const weakTopics = (curriculum.nodes || []).map(n => ({ ...n, mastery: masteryMap[n.id] || 0 })).sort((a, b) => a.mastery - b.mastery).slice(0, 5);
 
   const handleGenerate = async () => {
-    setIsLoading(true); setResults([]); setCurrent(0); setSelected(null); setAnswered(false); setSubmitted(false);
-    try { const d = await generateQuiz(userId, 5); setQuestions(d.questions || []); }
-    catch (err) { alert('Error: ' + err.message); }
-    setIsLoading(false);
+    setIsLoading(true);
+    setQuizError(null);
+    setResults([]);
+    setCurrent(0);
+    setSelected(null);
+    setAnswered(false);
+    setSubmitted(false);
+    try {
+      const d = await generateQuiz(userId, 5);
+      if (!d.questions || !d.questions.length) {
+        throw new Error('No quiz questions generated. Please try again.');
+      }
+      setQuestions(d.questions);
+    } catch (err) {
+      setQuizError(err.message || 'Failed to generate quiz');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleConfirm = () => {
-    if (selected === null) return;
+    if (selected === null || !questions || !questions[current]) return;
     setAnswered(true);
     const q = questions[current];
-    setResults(r => [...r, { topicId: q.topicId, topicLabel: q.topicLabel, correct: selected === q.correctIndex, selectedIndex: selected, correctIndex: q.correctIndex }]);
+    setResults(r => [...r, {
+      topicId: q.topicId,
+      topicLabel: q.topicLabel,
+      correct: selected === q.correctIndex,
+      selectedIndex: selected,
+      correctIndex: q.correctIndex
+    }]);
   };
 
   const handleNext = async () => {
-    if (current + 1 < questions.length) { setCurrent(c => c + 1); setSelected(null); setAnswered(false); }
-    else {
+    if (current + 1 < questions.length) {
+      setCurrent(c => c + 1);
+      setSelected(null);
+      setAnswered(false);
+    } else {
       setSubmitted(true);
-      try { const d = await submitQuiz(userId, results); Object.entries(d.masteryMap || {}).forEach(([id, v]) => updateMastery(id, v)); } catch { }
+      try {
+        const d = await submitQuiz(userId, results);
+        Object.entries(d.masteryMap || {}).forEach(([id, v]) => updateMastery(id, v));
+      } catch (err) {
+        setQuizError('Note: Mastery progress could not be saved to server.');
+      }
     }
   };
 
@@ -49,6 +78,11 @@ export default function QuizMode({ userId }) {
         <div style={{ fontSize: 48, marginBottom: 16, animation: 'float 6s infinite' }}>🧠</div>
         <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8, color: 'var(--accent2)' }}>Adaptive Quiz</h2>
         <p style={{ color: 'var(--text2)', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>Questions tailored to your weakest areas</p>
+        {quizError && (
+          <div style={{ padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid var(--red)', borderRadius: 'var(--radius)', color: 'var(--red)', fontSize: 13, marginBottom: 20 }}>
+            {quizError}
+          </div>
+        )}
         <div style={{ marginBottom: 30, textAlign: 'left' }}>
           <p style={{ fontSize: 12, color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: 12, fontWeight: 600 }}>Targeting weak areas</p>
           {weakTopics.map(t => (
