@@ -93,16 +93,21 @@ function KnowledgeGraph({ curriculum, masteryMap, onSelectTopic }) {
   const handleClick = e => {
     if (!canvas.current) return;
     const rect = canvas.current.getBoundingClientRect();
-    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    if (!rect.width || !rect.height) return;
+    const scaleX = 600 / rect.width;
+    const scaleY = 280 / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
     for (const [id, pos] of Object.entries(positions.current)) {
       if (Math.hypot(mx - pos.x, my - pos.y) <= 22) {
         const node = curriculum.nodes.find(n => n.id === id);
-        if (node) onSelectTopic(node); break;
+        if (node) onSelectTopic(node);
+        break;
       }
     }
   };
 
-  return <canvas ref={canvas} onClick={handleClick} style={{ cursor: 'pointer', display: 'block', margin: '0 auto', borderRadius: 8, border: '1px solid var(--border)' }} />;
+  return <canvas ref={canvas} onClick={handleClick} style={{ cursor: 'pointer', display: 'block', margin: '0 auto', maxWidth: '100%', height: 'auto', borderRadius: 8, border: '1px solid var(--border)' }} />;
 }
 
 export default function Dashboard({ curriculum, masteryMap, subject, onSelectTopic }) {
