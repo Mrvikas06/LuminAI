@@ -1,6 +1,7 @@
 {
-  "name": "uale",
+  "name": "luminai",
   "version": "1.0.0",
+  "description": "LuminAI — AI-driven adaptive learning platform",
   "private": true,
   "scripts": {
     "install:all": "cd client && npm install && cd ../server && npm install",
