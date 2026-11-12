@@ -17,7 +17,7 @@ export default function App() {
   const {
     userId, subject, curriculum, masteryMap, activeTab, activeTopic,
     setSubject, setCurriculum, setActiveTab, setActiveTopic,
-    setProgress, addMessage, clearMessages,
+    setProgress, addMessage, clearMessages, setAwaitingAnswer, setQuizQuestions,
   } = useLearningStore();
 
   const [isSetupLoading, setIsSetupLoading] = useState(false);
@@ -52,7 +52,7 @@ export default function App() {
             </div>
           </div>
           {curriculum && (
-            <button onClick={() => { setCurriculum(null); setSubject(null); setActiveTopic(null); clearMessages(); }}
+            <button onClick={() => { setCurriculum(null); setSubject(null); setActiveTopic(null); setAwaitingAnswer(null); setQuizQuestions(null); clearMessages(); }}
               style={{ width: '100%', padding: 6, background: 'transparent', border: '1px solid var(--border)', borderRadius: 7, color: 'var(--text3)', fontSize: 11, cursor: 'pointer' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent2)'; }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text3)'; }}>
