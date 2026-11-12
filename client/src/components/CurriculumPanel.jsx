@@ -21,7 +21,9 @@ export default function CurriculumPanel({ curriculum, masteryMap, activeTopic, o
       {next && (
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(59,130,246,0.04)', flexShrink: 0 }}>
           <div style={{ fontSize: 11, color: 'var(--accent)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>✨ Recommended next</div>
-          <button onClick={() => onSelectTopic(next)}
+          <button
+            onClick={() => onSelectTopic(next)}
+            aria-label={`Recommended next topic: ${next.label}`}
             style={{ width: '100%', padding: '12px 16px', background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)', borderRadius: '12px', color: 'var(--accent)', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8, boxShadow: '0 4px 10px rgba(59, 130, 246, 0.1)' }}>
             <span>→</span><span>{next.label}</span>
           </button>
@@ -37,7 +39,11 @@ export default function CurriculumPanel({ curriculum, masteryMap, activeTopic, o
               const isActive = activeTopic?.id === node.id;
               const color = getMasteryColor(mastery);
               return (
-                <button key={node.id} onClick={() => onSelectTopic(node)}
+                <button
+                  key={node.id}
+                  onClick={() => onSelectTopic(node)}
+                  aria-current={isActive ? 'true' : undefined}
+                  aria-label={`Topic: ${node.label}, mastery ${Math.round(mastery * 100)} percent, estimated ${node.estimatedMinutes} minutes`}
                   style={{ width: '100%', padding: '14px 16px', marginBottom: 6, background: isActive ? 'rgba(59,130,246,0.1)' : 'transparent', border: `1px solid ${isActive ? 'rgba(59,130,246,0.3)' : 'transparent'}`, borderRadius: '12px', color: isActive ? 'var(--text)' : 'var(--text2)', fontSize: 13, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, transition: 'all 0.2s ease' }}
                   onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.borderColor = 'var(--border)'; } }}
                   onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text2)'; e.currentTarget.style.borderColor = 'transparent'; } }}
