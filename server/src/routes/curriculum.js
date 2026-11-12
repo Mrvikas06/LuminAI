@@ -9,15 +9,19 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
 router.post('/generate', async (req, res) => {
-  const { subject, userId } = req.body;
-  if (!subject || !userId) return res.status(400).json({ error: 'subject and userId required' });
+  const { subject, userId } = req.body || {};
+  if (!subject || typeof subject !== 'string' || !subject.trim() || !userId || typeof userId !== 'string') {
+    return res.status(400).json({ error: 'Valid subject string and userId required' });
+  }
+
+  const cleanSubject = subject.trim();
 
   try {
-    const prompt = `Generate a comprehensive learning curriculum for: "${subject}"
+    const prompt = `Generate a comprehensive learning curriculum for: "${cleanSubject}"
 
 Return ONLY valid JSON (no markdown, no extra text) with this exact structure:
 {
-  "subject": "${subject}",
+  "subject": "${cleanSubject}",
   "summary": "2-sentence overview of the subject",
   "estimatedHours": 20,
   "learningPath": ["node_id_1", "node_id_2"],
@@ -46,7 +50,7 @@ Requirements:
     const result = await model.generateContent(prompt);
     const curriculum = parseGenerativeJson(result.response.text());
 
-    updateUser(userId, { subject, curriculum });
+    updateUser(userId, { subject: cleanSubject, curriculum });
     res.json({ curriculum });
   } catch (err) {
     console.error('Curriculum error:', err);

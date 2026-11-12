@@ -9,11 +9,14 @@ const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 router.post('/generate', async (req, res) => {
-  const { userId, count = 5 } = req.body;
+  const { userId, count = 5 } = req.body || {};
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+
   const user = getUser(userId);
   if (!user.curriculum?.nodes?.length) return res.status(400).json({ error: 'No curriculum found' });
 
-  const weakTopics = selectWeakTopics(user.curriculum, user.masteryMap, count);
+  const safeCount = Math.max(1, Math.min(10, parseInt(count, 10) || 5));
+  const weakTopics = selectWeakTopics(user.curriculum, user.masteryMap, safeCount);
   const topicsStr = weakTopics.map(t => `- ${t.label} (id: ${t.id})`).join('\n');
 
   const model = genAI.getGenerativeModel({
@@ -22,7 +25,7 @@ router.post('/generate', async (req, res) => {
   });
 
   try {
-    const prompt = `Generate ${count} multiple-choice quiz questions for: ${user.subject}
+    const prompt = `Generate ${safeCount} multiple-choice quiz questions for: ${user.subject}
 
 Focus on these weak topics (one question per topic):
 ${topicsStr}
@@ -56,14 +59,26 @@ Requirements:
 });
 
 router.post('/submit', (req, res) => {
-  const { userId, results } = req.body;
+  const { userId, results } = req.body || {};
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+
   const user = getUser(userId);
-  const masteryMap = { ...user.masteryMap };
-  (results || []).forEach(r => {
-    masteryMap[r.topicId] = updateMastery(masteryMap[r.topicId] || 0, r.correct, r.correct ? 'correct' : 'partial_knowledge');
+  const masteryMap = { ...(user.masteryMap || {}) };
+  const safeResults = Array.isArray(results) ? results : [];
+
+  safeResults.forEach(r => {
+    if (r && r.topicId) {
+      masteryMap[r.topicId] = updateMastery(
+        masteryMap[r.topicId] || 0,
+        Boolean(r.correct),
+        r.correct ? 'correct' : 'partial_knowledge'
+      );
+    }
   });
+
   updateUser(userId, { masteryMap });
-  res.json({ masteryMap, score: results.filter(r => r.correct).length, total: results.length });
+  const score = safeResults.filter(r => Boolean(r && r.correct)).length;
+  res.json({ masteryMap, score, total: safeResults.length });
 });
 
 export default router;
