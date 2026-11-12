@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getUser, updateUser } from '../store.js';
 import { updateMastery, getExplanationSystemPrompt } from '../adaptiveEngine.js';
+import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -74,8 +75,7 @@ Evaluate and return JSON:
 }`;
 
     const result = await model.generateContent(prompt);
-    const raw = result.response.text().trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    const eval_ = JSON.parse(raw);
+    const eval_ = parseGenerativeJson(result.response.text());
 
     const currentMastery = user.masteryMap[topicId] || 0;
     const newMastery = updateMastery(currentMastery, eval_.correct, eval_.mistakeType);
