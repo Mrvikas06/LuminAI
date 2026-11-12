@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { generateQuiz, submitQuiz } from '../api/api';
 import { useLearningStore } from '../store/learningStore';
 import { getMasteryColor } from '../utils/adaptiveEngine';
@@ -71,6 +71,25 @@ export default function QuizMode({ userId }) {
       }
     }
   };
+
+  useEffect(() => {
+    if (!questions || !questions.length || submitted) return;
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      const key = e.key.toUpperCase();
+      if (!answered) {
+        if (key === 'A' || key === '1') setSelected(0);
+        else if (key === 'B' || key === '2') setSelected(1);
+        else if (key === 'C' || key === '3') setSelected(2);
+        else if (key === 'D' || key === '4') setSelected(3);
+        else if (e.key === 'Enter' && selected !== null) handleConfirm();
+      } else if (e.key === 'Enter') {
+        handleNext();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [questions, current, selected, answered, submitted, results]);
 
   if (!questions && !isLoading) return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
