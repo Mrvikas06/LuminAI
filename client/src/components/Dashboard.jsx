@@ -107,7 +107,25 @@ function KnowledgeGraph({ curriculum, masteryMap, onSelectTopic }) {
     }
   };
 
-  return <canvas ref={canvas} onClick={handleClick} style={{ cursor: 'pointer', display: 'block', margin: '0 auto', maxWidth: '100%', height: 'auto', borderRadius: 8, border: '1px solid var(--border)' }} />;
+  const handleMouseMove = e => {
+    if (!canvas.current) return;
+    const rect = canvas.current.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const scaleX = 600 / rect.width;
+    const scaleY = 280 / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    let isOverNode = false;
+    for (const pos of Object.values(positions.current)) {
+      if (Math.hypot(mx - pos.x, my - pos.y) <= 22) {
+        isOverNode = true;
+        break;
+      }
+    }
+    canvas.current.style.cursor = isOverNode ? 'pointer' : 'default';
+  };
+
+  return <canvas ref={canvas} onClick={handleClick} onMouseMove={handleMouseMove} style={{ cursor: 'default', display: 'block', margin: '0 auto', maxWidth: '100%', height: 'auto', borderRadius: 8, border: '1px solid var(--border)' }} />;
 }
 
 export default function Dashboard({ curriculum, masteryMap, subject, onSelectTopic }) {
