@@ -24,6 +24,11 @@ app.use('/api/quiz', quizRoutes);
 app.use('/api/progress', progressRoutes);
 app.get('/api/health', (_, res) => res.json({ ok: true, ts: Date.now() }));
 
+// 404 handler for unrecognized API endpoints
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: `Endpoint ${req.method} ${req.path} not found` });
+});
+
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../public'), {
   setHeaders: (res, filePath) => {
@@ -41,6 +46,13 @@ app.get('*', (req, res) => {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  if (res.headersSent) return next(err);
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
 });
 
 app.listen(PORT, () => {
