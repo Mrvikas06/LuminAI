@@ -3,6 +3,7 @@ import { Router } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getUser, updateUser } from '../store.js';
 import { selectWeakTopics, updateMastery } from '../adaptiveEngine.js';
+import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -46,8 +47,7 @@ Requirements:
 - Clear, unambiguous questions`;
 
     const result = await model.generateContent(prompt);
-    const raw = result.response.text().trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    const data = JSON.parse(raw);
+    const data = parseGenerativeJson(result.response.text());
     res.json(data);
   } catch (err) {
     console.error('Quiz generate error:', err);
