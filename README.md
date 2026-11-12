@@ -32,12 +32,20 @@ cd ../server && npm install
 ```
 
 ### 2. Configure Environment variables
-Navigate to the `server` directory and create a `.env` file with your Google Gemini API key:
+Navigate to the `server` directory and create a `.env` file (see `.env.example`):
 ```env
 GEMINI_API_KEY=AIzaSy...
+GEMINI_MODEL=gemini-3-flash-preview
+PORT=3001
 ```
 
-### 3. Run the Application
+### 3. Run Tests
+Execute the automated test suite:
+```bash
+npm test
+```
+
+### 4. Run the Application
 Start the backend API server:
 ```bash
 cd server
@@ -63,7 +71,7 @@ lumin-ai/
 ├── client/                 # React + Vite (Glassmorphic Light Theme)
 │   └── src/
 │       ├── api/         
-│       │   └── uale.js        # REST client & Gemini SSE streaming receiver
+│       │   └── api.js         # REST client & Gemini SSE streaming receiver
 │       ├── components/        # ChatPanel, CurriculumPanel, Dashboard, QuizMode 
 │       ├── store/       
 │       │   └── learningStore  # Zustand global state manager
@@ -72,8 +80,10 @@ lumin-ai/
 │
 └── server/                 # Express API + Google Gen AI SDK
     ├── src/
-    │   ├── routes/          # /generate, /learning, /quiz
+    │   ├── routes/          # /generate, /learning, /quiz, /progress
+    │   ├── utils/           # Robust JSON parsing for LLM responses
     │   └── index.js         # Unified deployment gateway & static asset serving
+    ├── test/                # Automated unit test suite (Node test runner)
     └── package.json         # Container target
 ```
 
