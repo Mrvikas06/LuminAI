@@ -1,12 +1,18 @@
 import { create } from 'zustand';
 
 const getOrCreateUser = () => {
-  let uid = localStorage.getItem('luminai_user_id');
-  if (!uid) {
-    uid = 'user_' + Math.random().toString(36).substring(2, 10);
-    localStorage.setItem('luminai_user_id', uid);
+  try {
+    let uid = typeof window !== 'undefined' && window.localStorage ? localStorage.getItem('luminai_user_id') : null;
+    if (!uid) {
+      uid = 'user_' + (typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID().replace(/-/g, '').slice(0, 12) : Math.random().toString(36).substring(2, 10));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('luminai_user_id', uid);
+      }
+    }
+    return uid;
+  } catch {
+    return 'user_' + Math.random().toString(36).substring(2, 10);
   }
-  return uid;
 };
 
 const USER_ID = getOrCreateUser();
