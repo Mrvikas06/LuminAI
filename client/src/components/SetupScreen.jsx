@@ -13,7 +13,11 @@ const POPULAR = [
 
 export default function SetupScreen({ onStart, isLoading }) {
   const [subject, setSubject] = useState('');
-  const handleStart = () => { if (subject.trim()) onStart(subject.trim()); };
+  const handleStart = () => {
+    if (!isLoading && subject.trim()) {
+      onStart(subject.trim());
+    }
+  };
 
   return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
@@ -30,9 +34,10 @@ export default function SetupScreen({ onStart, isLoading }) {
         <div style={{ marginBottom: 24 }}>
           <div style={{ display: 'flex', gap: 10 }}>
             <input
+              autoFocus
               value={subject}
               onChange={e => setSubject(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleStart()}
+              onKeyDown={e => e.key === 'Enter' && !isLoading && subject.trim() && handleStart()}
               placeholder="What do you want to learn? (e.g. Quantum Mechanics)"
               disabled={isLoading}
               style={{ flex: 1, padding: '14px 18px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', color: 'var(--text)', fontSize: 15, outline: 'none' }}
