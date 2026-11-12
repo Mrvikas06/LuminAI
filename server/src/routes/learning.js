@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { getUser, updateUser } from '../store.js';
-import { updateMastery, getExplanationSystemPrompt } from '../adaptiveEngine.js';
+import { updateMastery, getExplanationSystemPrompt, classifyMistakeType } from '../adaptiveEngine.js';
 import { parseGenerativeJson } from '../utils/jsonParser.js';
 
 const router = Router();
@@ -77,9 +77,26 @@ Evaluate and return JSON:
     const result = await model.generateContent(prompt);
     const eval_ = parseGenerativeJson(result.response.text());
 
+    const mistakeType = eval_.correct
+      ? 'correct'
+      : (eval_.mistakeType || classifyMistakeType(eval_.feedback || eval_.betterExplanation));
+    eval_.mistakeType = mistakeType;
+
     const currentMastery = user.masteryMap[topicId] || 0;
     const newMastery = updateMastery(currentMastery, eval_.correct, eval_.mistakeType);
-    updateUser(userId, { masteryMap: { ...user.masteryMap, [topicId]: newMastery } });
+
+    const mistakeHistory = { ...(user.mistakeHistory || {}) };
+    if (!eval_.correct) {
+      mistakeHistory[topicId] = [
+        ...(mistakeHistory[topicId] || []),
+        { mistakeType, timestamp: Date.now(), question, userAnswer },
+      ].slice(-20);
+    }
+
+    updateUser(userId, {
+      masteryMap: { ...user.masteryMap, [topicId]: newMastery },
+      mistakeHistory,
+    });
 
     res.json({ ...eval_, newMastery });
   } catch (err) {
